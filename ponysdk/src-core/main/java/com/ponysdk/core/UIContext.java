@@ -55,6 +55,7 @@ import com.ponysdk.ui.server.basic.PHistory;
 import com.ponysdk.ui.server.basic.PObject;
 import com.ponysdk.ui.server.basic.PPusher;
 import com.ponysdk.ui.server.basic.PTimer;
+import com.ponysdk.ui.server.basic.PWindow;
 import com.ponysdk.ui.terminal.Dictionnary.APPLICATION;
 import com.ponysdk.ui.terminal.Dictionnary.HANDLER;
 import com.ponysdk.ui.terminal.Dictionnary.HISTORY;
@@ -88,6 +89,7 @@ public class UIContext {
     private PHistory history;
 
     private EventBus rootEventBus;
+    private PWindow window;
 
     private final PCookies cookies = new PCookies();
 
@@ -111,7 +113,7 @@ public class UIContext {
         currentStacker.add(instruction);
     }
 
-    void fireClientData(final JSONObject instruction) throws JSONException {
+    public void fireClientData(final JSONObject instruction) throws JSONException {
         if (instruction.has(TYPE.KEY)) {
             if (instruction.get(TYPE.KEY).equals(TYPE.KEY_.CLOSE)) {
                 UIContext.get().invalidate();
@@ -229,6 +231,14 @@ public class UIContext {
         return rootEventBus;
     }
 
+    private void setWindow(final PWindow window) {
+        this.window = window;
+    }
+
+    private PWindow getWindow() {
+        return window;
+    }
+
     public PCookies getCookies() {
         return cookies;
     }
@@ -243,6 +253,10 @@ public class UIContext {
 
     public static UIContext get() {
         return currentContext.get();
+    }
+
+    public static PWindow getCurrentWindow() {
+        return get().getWindow();
     }
 
     public static void remove() {
@@ -271,6 +285,10 @@ public class UIContext {
 
     public static void addHandler(final BroadcastEventHandler handler) {
         get().getEventBus().addHandler(handler);
+    }
+
+    public static void setCurrentWindow(final PWindow window) {
+        get().setWindow(window);
     }
 
     public static EventBus getRootEventBus() {
@@ -416,4 +434,9 @@ public class UIContext {
     public long getLastSyncErrorTimestamp() {
         return lastSyncErrorTimestamp;
     }
+
+    public List<Instruction> getInstructionStacker() {
+        return instructionStacker;
+    }
+
 }

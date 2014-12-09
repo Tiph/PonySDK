@@ -138,13 +138,19 @@ public class CommunicationEntryPoint implements EntryPoint, Callback<Void, Excep
 
             };
 
-            requestBuilder = new HttpRequestBuilder(requestCallback);
+            requestBuilder = newRequestBuilder(requestCallback);
             requestBuilder.send(requestData.toString());
 
         } catch (final Exception e) {
             log.log(Level.SEVERE, "Loading application has failed #" + e.getMessage(), e);
             Window.alert("Loading application has failed #" + e);
         }
+    }
+
+    private RequestBuilder newRequestBuilder(final RequestCallback requestCallback) {
+        final String windowID = Window.Location.getParameter("wid");
+        if (windowID != null) { return new ParentWindowRequest(windowID, requestCallback); }
+        return new HttpRequestBuilder(requestCallback);
     }
 
     protected void initUIBuilder() {

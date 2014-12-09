@@ -140,7 +140,10 @@ public abstract class AbstractApplicationManager {
 
         final UIContext uiContext = applicationSession.getUIContext(key);
 
-        if (uiContext == null) { throw new ServerException(ServerException.INVALID_SESSION, "Invalid session (no UIContext), please reload your application (viewID #" + key + ")."); }
+        if (uiContext == null) {
+            System.err.println();
+            throw new ServerException(ServerException.INVALID_SESSION, "Invalid session (no UIContext), please reload your application (viewID #" + key + ").");
+        }
 
         uiContext.acquire();
         try {
