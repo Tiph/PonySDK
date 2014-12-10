@@ -161,9 +161,11 @@ public class PWindow extends PObject implements PNativeHandler {
 
     public void flush() {
         try {
-            out.put(APPLICATION.INSTRUCTIONS, popupstacker);
-            out.put(APPLICATION.SEQ_NUM, sendSeqNum);
-            sendSeqNum++;
+            if (popupstacker.size() > 0) {
+                out.put(APPLICATION.INSTRUCTIONS, popupstacker);
+                out.put(APPLICATION.SEQ_NUM, sendSeqNum);
+                sendSeqNum++;
+            }
         } catch (final JSONException e) {
             log.error("Cannot flush window", e);
         }
@@ -172,9 +174,11 @@ public class PWindow extends PObject implements PNativeHandler {
     public void release() {
         try {
             context.setCurrentStacker(mainStacker);
-            final Update update = new Update(ID);
-            update.put(PROPERTY.TEXT, out.toString());
-            getUIContext().stackInstruction(update);
+            if (popupstacker.size() > 0) {
+                final Update update = new Update(ID);
+                update.put(PROPERTY.TEXT, out.toString());
+                getUIContext().stackInstruction(update);
+            }
         } finally {
             UIContext.setCurrentWindow(null);
         }
