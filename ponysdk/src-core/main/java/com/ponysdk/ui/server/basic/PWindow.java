@@ -55,7 +55,9 @@ public class PWindow extends PObject implements PNativeHandler {
     private JSONObject out;
     private UIContext context;
     private List<Instruction> popupstacker;
-    private List<Instruction> mainStacker;
+
+    private PWindow oldW;
+    private List<Instruction> oldStacker;
 
     private final List<Runnable> postedCommands = new ArrayList<Runnable>();
     private final ListenerCollection<PCloseHandler> closeHandlers = new ListenerCollection<PCloseHandler>();
@@ -144,18 +146,15 @@ public class PWindow extends PObject implements PNativeHandler {
             if (log.isWarnEnabled()) log.warn("Window is not loaded yet.");
             return;
         }
-        out = new JSONObject();
-        context = UIContext.get();
-        popupstacker = new ArrayList<Instruction>();
-        mainStacker = context.setCurrentStacker(popupstacker);
-        UIContext.setCurrentWindow(this);
+        acquireOnNativeEvent();
     }
 
     private void acquireOnNativeEvent() {
+        oldW = UIContext.getCurrentWindow();
         out = new JSONObject();
         context = UIContext.get();
         popupstacker = new ArrayList<Instruction>();
-        mainStacker = context.setCurrentStacker(popupstacker);
+        oldStacker = context.setCurrentStacker(popupstacker);
         UIContext.setCurrentWindow(this);
     }
 
@@ -173,14 +172,15 @@ public class PWindow extends PObject implements PNativeHandler {
 
     public void release() {
         try {
-            context.setCurrentStacker(mainStacker);
+            context.setCurrentStacker(UIContext.get().getInstructionStacker());
             if (popupstacker.size() > 0) {
                 final Update update = new Update(ID);
                 update.put(PROPERTY.TEXT, out.toString());
                 getUIContext().stackInstruction(update);
             }
         } finally {
-            UIContext.setCurrentWindow(null);
+            context.setCurrentStacker(oldStacker);
+            UIContext.setCurrentWindow(oldW);
         }
     }
 
