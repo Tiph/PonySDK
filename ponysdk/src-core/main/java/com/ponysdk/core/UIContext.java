@@ -48,6 +48,7 @@ import com.ponysdk.core.instruction.AddHandler;
 import com.ponysdk.core.instruction.Close;
 import com.ponysdk.core.instruction.Instruction;
 import com.ponysdk.core.security.Permission;
+import com.ponysdk.core.servlet.CommunicationSanityChecker;
 import com.ponysdk.core.servlet.Session;
 import com.ponysdk.core.stm.ClientLoopListener;
 import com.ponysdk.ui.server.basic.PCookies;
@@ -99,14 +100,20 @@ public class UIContext {
 
     private final ReentrantLock lock = new ReentrantLock();
 
+    private final List<UIContextListener> uiContextListeners = new ArrayList<UIContextListener>();
+
     private long viewID = -1;
     private long lastReceived = -1;
     private long lastSyncErrorTimestamp = 0;
     private long nextSent = 0;
     private final Map<Long, JSONObject> incomingMessageQueue = new HashMap<Long, JSONObject>();
 
+    private final CommunicationSanityChecker communicationSanityChecker;
+
     public UIContext(final Application ponyApplication) {
         this.application = ponyApplication;
+        this.communicationSanityChecker = new CommunicationSanityChecker(this);
+        this.communicationSanityChecker.start();
     }
 
     public void stackInstruction(final Instruction instruction) {
@@ -146,6 +153,26 @@ public class UIContext {
                 object.onClientData(instruction);
             }
         }
+    }
+
+    public void notifyMessageReceived() {
+        communicationSanityChecker.onMessageReceived();
+    }
+
+    public void destroy() {
+        log.info("Destroying UIContext ViewID #{} from the Session #{}", viewID, application.getSession().getId());
+        communicationSanityChecker.stop();
+        application.unregisterUIContext(viewID);
+
+        for (final UIContextListener listener : uiContextListeners) {
+            listener.onUIContextDestroyed(this);
+        }
+
+        log.info("UIContext destroyed ViewID #{} from the Session #{}", viewID, application.getSession().getId());
+    }
+
+    public void addUIContextListener(final UIContextListener listener) {
+        uiContextListeners.add(listener);
     }
 
     public boolean flushInstructions(final JSONObject data) throws JSONException {
@@ -367,6 +394,7 @@ public class UIContext {
     }
 
     public boolean updateIncomingSeqNum(final long receivedSeqNum) {
+        notifyMessageReceived();
         final long previous = lastReceived;
         if ((previous + 1) != receivedSeqNum) {
             log.error("Wrong seqnum received. Expecting #" + (previous + 1) + " but received #" + receivedSeqNum);
@@ -438,6 +466,24 @@ public class UIContext {
     // main stacker ???
     public List<Instruction> getInstructionStacker() {
         return instructionStacker;
+    }
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + (int) (viewID ^ (viewID >>> 32));
+        return result;
+    }
+
+    @Override
+    public boolean equals(final Object obj) {
+        if (this == obj) return true;
+        if (obj == null) return false;
+        if (getClass() != obj.getClass()) return false;
+        final UIContext other = (UIContext) obj;
+        if (viewID != other.viewID) return false;
+        return true;
     }
 
 }
