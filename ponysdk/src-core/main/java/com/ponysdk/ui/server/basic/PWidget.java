@@ -23,9 +23,11 @@
 
 package com.ponysdk.ui.server.basic;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -173,11 +175,27 @@ public abstract class PWidget extends PObject implements IsPWidget {
         return elementAttributes.get(key);
     }
 
-    public void setStyleName(final String styleName) {
-        this.styleName = styleName;
+    public void setStyleName(final List<String> styles) {
+        this.styleName = "";
+
+        final Iterator<String> iterator = styles.iterator();
+        while (iterator.hasNext()) {
+            this.styleName += iterator.next();
+            if (iterator.hasNext()) this.styleName += " ";
+        }
+
         final Update update = new Update(ID);
         update.put(PROPERTY.STYLE_NAME, styleName);
         getUIContext().stackInstruction(update);
+    }
+
+    public void setStyleName(final String styleName) {
+        if (styleName.equals(this.styleNames)) return;
+        this.styleName = styleName;
+
+        final String[] styles = styleName.split(" ");
+        styleNames.clear();
+        setStyleName(Arrays.asList(styles));
     }
 
     public void setStylePrimaryName(final String styleName) {
@@ -185,6 +203,10 @@ public abstract class PWidget extends PObject implements IsPWidget {
         final Update update = new Update(ID);
         update.put(PROPERTY.STYLE_PRIMARY_NAME, styleName);
         getUIContext().stackInstruction(update);
+    }
+
+    public Set<String> getStyleNames() {
+        return new HashSet<String>(styleNames);
     }
 
     public void addStyleName(final String styleName) {

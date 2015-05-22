@@ -24,7 +24,6 @@
 package com.ponysdk.core;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -177,15 +176,18 @@ public class UIContext {
 
     public boolean flushInstructions(final JSONObject data) throws JSONException {
         if (currentStacker.isEmpty()) return false;
-        data.put(APPLICATION.INSTRUCTIONS, currentStacker);
-        currentStacker.clear();
-        return true;
-    }
 
-    public Collection<Instruction> clearPendingInstructions() {
-        final List<Instruction> removed = new ArrayList<Instruction>(currentStacker);
-        currentStacker.clear();
-        return removed;
+        if (polling) {
+            final List<Instruction> removed = new ArrayList<Instruction>(currentStacker.subList(0, Math.min(3500, currentStacker.size())));
+            currentStacker.removeAll(removed);
+            // System.err.println("flusing : " + removed);
+            data.put(APPLICATION.INSTRUCTIONS, removed);
+            return true;
+        } else {
+            data.put(APPLICATION.INSTRUCTIONS, currentStacker);
+            currentStacker.clear();
+            return true;
+        }
     }
 
     public void acquire() {
@@ -484,6 +486,13 @@ public class UIContext {
         final UIContext other = (UIContext) obj;
         if (viewID != other.viewID) return false;
         return true;
+    }
+
+    boolean polling = false;
+
+    public void setPollingMode(final boolean b) {
+        polling = b;
+
     }
 
 }

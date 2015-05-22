@@ -34,7 +34,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.ponysdk.core.UIContext;
-import com.ponysdk.core.instruction.Instruction;
 import com.ponysdk.core.socket.ConnectionListener;
 import com.ponysdk.core.socket.WebSocket;
 import com.ponysdk.core.tools.ListenerCollection;
@@ -53,8 +52,6 @@ public class PPusher extends PObject implements ConnectionListener {
 
     private final List<ConnectionListener> connectionListeners = new ArrayList<ConnectionListener>();
     private final ListenerCollection<DataListener> listenerCollection = new ListenerCollection<DataListener>();
-
-    private final List<Instruction> updates = new ArrayList<Instruction>();
 
     private boolean polling = false;
     private PusherState pusherState = PusherState.STOPPED;
@@ -114,16 +111,13 @@ public class PPusher extends PObject implements ConnectionListener {
     }
 
     public void flush() throws IOException, JSONException {
-        if (polling) {
-            final Collection<Instruction> instructions = uiContext.clearPendingInstructions();
-            updates.addAll(instructions);
-            return;
-        }
+        if (polling) { return; }
 
         final JSONObject jsonObject = new JSONObject();
         if (!uiContext.flushInstructions(jsonObject)) return;
 
         jsonObject.put(APPLICATION.SEQ_NUM, uiContext.getAndIncrementNextSentSeqNum());
+
         websocket.send(jsonObject.toString());
     }
 
@@ -132,13 +126,9 @@ public class PPusher extends PObject implements ConnectionListener {
         if (event.has(PROPERTY.ERROR_MSG)) {
             log.warn("Failed to open websocket connection. Falling back to polling.");
             polling = true;
+            uiContext.setPollingMode(true);
             onOpen();
-        } else if (event.has(PROPERTY.POLL)) {
-            for (final Instruction instruction : updates) {
-                getUIContext().stackInstruction(instruction);
-            }
-            updates.clear();
-        }
+        } else if (event.has(PROPERTY.POLL)) {}
     }
 
     public PusherState getPusherState() {
@@ -231,6 +221,32 @@ public class PPusher extends PObject implements ConnectionListener {
         } finally {
             PPusher.get().end();
         }
+    }
+
+    public boolean execute(final Runnable runnable) {
+        try {
+            if (UIContext.get() == null) {
+                begin();
+                try {
+                    uiContext.begin();
+                    runnable.run();
+                    uiContext.end();
+                    PPusher.get().flush();
+                } finally {
+                    end();
+                }
+            } else {
+                runnable.run();
+            }
+        } catch (final Throwable e) {
+            log.error("Cannot execute command : " + runnable, e);
+            return false;
+        }
+        return true;
+    }
+
+    public boolean isPolling() {
+        return polling;
     }
 
 }

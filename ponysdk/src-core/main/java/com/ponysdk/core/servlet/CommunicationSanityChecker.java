@@ -48,7 +48,7 @@ public class CommunicationSanityChecker {
 
     public CommunicationSanityChecker(final UIContext uiContext) {
         this.uiContext = uiContext;
-        setHeartBeatPeriod(10);
+        setHeartBeatPeriod(30);
     }
 
     private boolean isStarted() {
@@ -106,8 +106,10 @@ public class CommunicationSanityChecker {
                 }
                 break;
             case SUSPECT:
+
                 if (lastReceivedTime < suspectTime) {
                     if ((now - suspectTime) >= heartBeatPeriod) {
+                        log.info("No message have been received since we suspected the communication to be non functional");
                         // No message have been received since we suspected the communication to be non
                         // functional
                         currentState = CommunicationState.KO;
