@@ -5,9 +5,12 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Delayed;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -109,7 +112,7 @@ public class UIScheduledThreadPoolExecutor implements UIScheduledExecutorService
         }
     }
 
-    protected class UIRunnable implements Runnable {
+    protected class UIRunnable implements Runnable, ScheduledFuture<Object> {
 
         private final Runnable runnable;
         private final UIContext uiContext;
@@ -132,13 +135,7 @@ public class UIScheduledThreadPoolExecutor implements UIScheduledExecutorService
         @Override
         public void run() {
             if (cancelled) return;
-            if (!uiContext.getPusher().execute(runnable)) cancel();
-        }
-
-        public void cancel() {
-            this.cancelled = true;
-            this.future.cancel(true);
-            executor.purge();
+            if (!uiContext.getPusher().execute(runnable)) cancel(false);
         }
 
         public void setFuture(final ScheduledFuture<?> future) {
@@ -147,6 +144,48 @@ public class UIScheduledThreadPoolExecutor implements UIScheduledExecutorService
 
         public UIContext getUiContext() {
             return uiContext;
+        }
+
+        @Override
+        public long getDelay(final TimeUnit unit) {
+            return future.getDelay(unit);
+        }
+
+        @Override
+        public int compareTo(final Delayed o) {
+            return future.compareTo(o);
+        }
+
+        @Override
+        public boolean cancel(final boolean mayInterruptIfRunning) {
+            this.cancelled = true;
+            final boolean cancel = this.future.cancel(mayInterruptIfRunning);
+            final Set<UIRunnable> set = runnablesByUIContexts.get(uiContext);
+            if (set != null) {
+                set.remove(this);
+            }
+            executor.purge();
+            return cancel;
+        }
+
+        @Override
+        public boolean isCancelled() {
+            return cancelled;
+        }
+
+        @Override
+        public boolean isDone() {
+            return future.isDone();
+        }
+
+        @Override
+        public Object get() throws InterruptedException, ExecutionException {
+            return future.get();
+        }
+
+        @Override
+        public Object get(final long timeout, final TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
+            return future.get(timeout, unit);
         }
 
     }
@@ -167,7 +206,7 @@ public class UIScheduledThreadPoolExecutor implements UIScheduledExecutorService
         final Set<UIRunnable> runnables = runnablesByUIContexts.remove(uiContext);
         if (runnables != null) {
             for (final UIRunnable runnable : runnables) {
-                runnable.cancel();
+                runnable.cancel(false);
             }
         }
     }
