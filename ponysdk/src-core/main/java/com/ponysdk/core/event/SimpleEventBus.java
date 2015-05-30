@@ -34,6 +34,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
+import java.util.WeakHashMap;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -207,7 +208,7 @@ public class SimpleEventBus implements EventBus {
     private <H extends EventHandler> Set<H> ensureHandlerSet(final Type<H> type, final Object source) {
         Map<Object, Set<?>> sourceMap = map.get(type);
         if (sourceMap == null) {
-            sourceMap = new HashMap<Object, Set<?>>();
+            sourceMap = new WeakHashMap<Object, Set<?>>();
             map.put(type, sourceMap);
         }
 
@@ -243,7 +244,7 @@ public class SimpleEventBus implements EventBus {
         final Set<H> handlers = (Set<H>) sourceMap.get(source);
         if (handlers == null) { return Collections.emptySet(); }
 
-        return new HashSet<H>(handlers);
+        return handlers;
     }
 
     private void prune(final Type<?> type, final Object source) {

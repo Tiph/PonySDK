@@ -143,6 +143,10 @@ public class PPusher extends PObject implements ConnectionListener {
         listenerCollection.register(listener);
     }
 
+    public void removeDataListener(final DataListener listener) {
+        listenerCollection.unregister(listener);
+    }
+
     public void pushBatchToClient(final Collection<Object> collection) {
         if (pusherState != PusherState.STARTED) {
             if (log.isDebugEnabled()) log.debug("Pusher not started. Skipping message #" + collection);
