@@ -62,7 +62,7 @@ public class UIScheduledThreadPoolExecutor implements UIScheduledExecutorService
         runnable.setFuture(future);
         registerTask(runnable);
 
-        return future;
+        return runnable;
     }
 
     @Override
@@ -73,7 +73,7 @@ public class UIScheduledThreadPoolExecutor implements UIScheduledExecutorService
         runnable.setFuture(future);
         registerTask(runnable);
 
-        return future;
+        return runnable;
     }
 
     @Override
@@ -85,7 +85,7 @@ public class UIScheduledThreadPoolExecutor implements UIScheduledExecutorService
         runnable.setFuture(future);
         registerTask(runnable);
 
-        return future;
+        return runnable;
     }
 
     static class WindowUIRunnable implements Runnable {
