@@ -26,8 +26,10 @@ package com.ponysdk.core;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -82,7 +84,7 @@ public class UIContext {
 
     private List<Instruction> currentStacker = instructionStacker;
 
-    private final List<ClientLoopListener> clientLoopListener = new ArrayList<ClientLoopListener>();
+    private final Set<ClientLoopListener> clientLoopListener = new HashSet<ClientLoopListener>();
 
     private Map<String, Permission> permissions = new HashMap<String, Permission>();
 
