@@ -442,12 +442,18 @@ public class UIContext {
     }
 
     public void begin() {
+        for (final UIContextListener listener : uiContextListeners) {
+            listener.onBeforeBegin(this);
+        }
         clientLoopListener.clear();
     }
 
     public void end() {
         for (final ClientLoopListener listener : clientLoopListener) {
             listener.onLoopEnd();
+        }
+        for (final UIContextListener listener : uiContextListeners) {
+            listener.onAfterEnd(this);
         }
     }
 

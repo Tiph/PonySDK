@@ -211,4 +211,12 @@ public class UIScheduledThreadPoolExecutor implements UIScheduledExecutorService
         }
     }
 
+    @Override
+    public void onBeforeBegin(final UIContext uiContext) {
+    }
+
+    @Override
+    public void onAfterEnd(final UIContext uiContext) {
+    }
+
 }
