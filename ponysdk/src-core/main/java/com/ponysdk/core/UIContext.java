@@ -101,7 +101,7 @@ public class UIContext {
 
     private final ReentrantLock lock = new ReentrantLock();
 
-    private final List<UIContextListener> uiContextListeners = new ArrayList<UIContextListener>();
+    private final Set<UIContextListener> uiContextListeners = Collections.newSetFromMap(new ConcurrentHashMap<UIContextListener, Boolean>());
 
     private long viewID = -1;
     private long lastReceived = -1;
