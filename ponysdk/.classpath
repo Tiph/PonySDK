@@ -45,5 +45,7 @@
 	<classpathentry kind="lib" path="libs/commons/commons-beanutils.jar"/>
 	<classpathentry kind="lib" path="libs/jetty/jetty-client.jar"/>
 	<classpathentry kind="lib" path="libs/jetty/jetty-io.jar"/>
+	<classpathentry kind="lib" path="libs/gwt/commons-lang.jar"/>
+	<classpathentry kind="lib" path="libs/jetty/jetty.jar"/>
 	<classpathentry kind="output" path="build/classes/main"/>
 </classpath>

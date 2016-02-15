@@ -1,7 +1,7 @@
 apply plugin: 'java'
 
 sourceCompatibility = 1.6
-version = '1.4.9.10'
+version = '1.5.0.0'
 
 ext{
     coreversion = 0.6
@@ -84,11 +84,13 @@ configurations {
 
 dependencies {
 	xjc 'com.sun.xml.bind:jaxb-xjc:2.2.4'
-	gwt 'com.google.gwt:gwt-user:2.5.1'
-	gwt 'com.google.gwt:gwt-dev:2.5.1'
-	gwt 'com.google.gwt:gwt-codeserver:2.5.1'
+	gwt 'com.google.gwt:gwt-user:2.7.0'
+	gwt 'com.google.gwt:gwt-dev:2.7.0'
+	gwt 'com.google.gwt:gwt-codeserver:2.7.0'
 	gwt 'javax.validation:validation-api:1.0.0.GA@jar'
 	gwt 'org.json:json:20090211'
+	gwt 'org.ow2.asm:asm:5.0.3'
+	gwt 'commons-lang:commons-lang:2.4'
 	spring 'org.springframework:spring-context:3.0.6.RELEASE'
 	spring 'org.springframework:spring-web:3.0.6.RELEASE'
 	sl4j 'org.slf4j:slf4j-api:1.6.2'
@@ -111,6 +113,7 @@ dependencies {
     jetty 'org.eclipse.jetty:jetty-websocket:8.1.4.v20120524'
     jetty 'org.eclipse.jetty:jetty-client:8.1.4.v20120524'
     jetty 'org.eclipse.jetty:jetty-client:8.1.4.v20120524'
+    jetty (group: 'org.mortbay.jetty', name: 'jetty', version: '6.1.24')
     'org.eclipse.jetty:jetty-io:8.1.4.v20120524'
     jetty 'org.apache.geronimo.specs:geronimo-servlet_3.0_spec:1.0'
 }
